@@ -4,15 +4,29 @@ import PrimeVue from 'primevue/config'
 import 'primevue/resources/primevue.min.css'
 import 'primevue/resources/themes/mdc-light-indigo/theme.css'
 import './assets/main.css'
-
+import { auth } from './firebase'
+import { onAuthStateChanged } from 'firebase/auth'
+import { user } from './stores/authStore'
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 
-const app = createApp(App)
 
-app.use(router)
-app.use(PrimeVue)
+onAuthStateChanged(auth, (firebaseUser) => {
+  user.value = firebaseUser
+  console.log(user)
+})
 
-app.mount('#app')
+let initialAuthStateChecked = false
+onAuthStateChanged(auth, (firebaseUser) => {
+  const app = createApp(App)
+  app.use(router)
+  app.use(PrimeVue)
+
+  user.value = firebaseUser
+  if (!initialAuthStateChecked) {
+    initialAuthStateChecked = true
+    app.mount('#app')
+  }
+})
 
